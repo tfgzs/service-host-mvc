@@ -4,10 +4,13 @@ import com.fasterxml.jackson.core.JsonProcessingException
 import com.fasterxml.jackson.databind.JavaType
 import com.fasterxml.jackson.databind.ObjectMapper
 import groovy.transform.CompileStatic
+import org.nofdev.plugin.authentication.Authentication
+import org.nofdev.plugin.authentication.AuthenticationPlugin
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.aop.framework.AopProxyUtils
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.context.ApplicationContext
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
@@ -37,6 +40,9 @@ public class FacadeController {
 
     @Autowired
     private ApplicationContext context;
+
+    @Autowired
+    private Authentication authentication;
 
     @RequestMapping("json/{packageName}/{interfaceName}/{methodName}")
     public ResponseEntity<HttpJsonResponse> json(@PathVariable String packageName,
@@ -75,6 +81,7 @@ public class FacadeController {
                 }
             }
             if (method != null) {
+                authentication.tokenToUser(methodName,header)
                 if (params != null && !"null".equals(params)) {
                     val = ReflectionUtils.invokeMethod(method, service, deserialize(params, method.getGenericParameterTypes()).toArray());
                 } else {
